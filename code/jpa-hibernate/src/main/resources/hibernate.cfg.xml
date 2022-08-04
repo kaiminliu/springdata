@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+  <session-factory>
+    <!-- 配置数据库连接信息 -->
+    <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+    <property name="connection.url">jdbc:mysql://localhost:3306/springdata_jpa?characterEncoding=UTF-8</property>
+    <property name="connection.username">root</property>
+    <property name="connection.password">123456</property>
+
+    <!-- 会在日志中记录sql 默认false-->
+    <property name="show_sql">true</property>
+    <!--是否格式化sql 默认false-->
+    <property name="format_sql">true</property>
+    <!--表生成策略
+        默认none   不自动生成
+        update    如果没有表会创建，有会检查更新
+        create    每次删除表，再创建表，即使没有改变
+        create-drop 每次创建表，sessionFactory关闭，就删除表
+        validate 每次验证数据库表结构，只会与表进行比较，不会创建新表，但是会插入新值
+        -->
+    <property name="hbm2ddl.auto">update</property>
+    <!-- 配置方言：选择数据库类型 -->
+    <property name="dialect">org.hibernate.dialect.MySQL57InnoDBDialect</property>
+
+    <!--指定哪些pojo 需要进行ORM映射-->
+    <mapping package="cn.liuminkai.pojo"></mapping>
+  </session-factory>
+</hibernate-configuration>

@@ -1,154 +1,51 @@
-## hibernate 示例
-### 1、pom.xml引入依赖
-```xml
-    <dependencies>
-        <!-- junit4 -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- hibernate对jpa的支持包 -->
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-            <version>5.4.32.Final</version>
-        </dependency>
+jpa学习分为三个模块
+- spring：spring-data-jpa
+- springboot：springboot-jpa
+- jpa-hibernate
+# 一、什么是JPA
 
-        <!-- Mysql and MariaDB -->
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.22</version>
-        </dependency>
-        <!-- openjpa JPA的实现之一 -->
-        <dependency>
-            <groupId>org.apache.openjpa</groupId>
-            <artifactId>openjpa-all</artifactId>
-            <version>3.2.0</version>
-        </dependency>
-    </dependencies>
-```
+JPA仅仅是一种规范，也就是说JPA仅仅定义了一些接口，而接口是需要实现才能工作的。
 
-## 2、创建实体类
-@Table 注解 name 会报红，
-```java
+JPA与JDBC区别
+- JPA实现由全自动ORM框架
+- JDBC实现 各数据库厂商
 
-@Entity     // 作为hibernate 实体类
-@Table(name = "tb_customer")       // 映射的表明
-public class Customer {
+Eclipse基金会，Jakart Persistence API
 
-    /**
-     * @Id：声明主键的配置
-     * @GeneratedValue:配置主键的生成策略
-     *      strategy
-     *          GenerationType.IDENTITY ：自增，mysql
-     *                 * 底层数据库必须支持自动增长（底层数据库支持的自动增长方式，对id自增）
-     *          GenerationType.SEQUENCE : 序列，oracle
-     *                  * 底层数据库必须支持序列
-     *          GenerationType.TABLE : jpa提供的一种机制，通过一张数据库表的形式帮助我们完成主键自增
-     *          GenerationType.AUTO ： 由程序自动的帮助我们选择主键生成策略
-     * @Column:配置属性和字段的映射关系
-     *      name：数据库表中字段的名称
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long custId; //客户的主键
+JPA规范为我们提供了：
 
-    @Column(name = "cust_name")
-    private String custName;//客户名称
+（1）ORM映射元数据
+    如：@Entity、@Table、@Id、@Column等注解
 
-    @Column(name="cust_address")
-    private String custAddress;//客户地址
+（2）JPA的API
+    如：entityManager.merge(T t);
 
-    public Long getCustId() {
-        return custId;
-    }
+（3）JPQL查询语言
+    如：`from Student s where s.name = ?1`
 
-    public void setCustId(Long custId) {
-        this.custId = custId;
-    }
+# 二、Hibernate与JPA
+Hibernate是一个ORM框架，是JPA的实现
 
-    public String getCustName() {
-        return custName;
-    }
+Hibernate与Mybatis简单对比
+- mybatis: 小巧，方便，高效，简单，直接，半自动
+  - 小巧：mybatis就是jdbc封装
+  - 国内流行
+  - 应用场景：在业务比较复杂系统进行使用
+- hibernate: 强大，方便，高效，复杂，绕弯，全自动
+  - 强大：根据ORM映射生成不同的SQL
+  - 国外流行
+  - 应用场景：在业务相对简单的系统进行使用（现在学习，是因为，随着微服务的流行，系统会被拆分为一个个小服务，小服务往往不会太复杂）
 
-    public void setCustName(String custName) {
-        this.custName = custName;
-    }
+hibernate 示例
 
+pom.xml
 
-    public String getCustAddress() {
-        return custAddress;
-    }
-
-    public void setCustAddress(String custAddress) {
-        this.custAddress = custAddress;
-    }
-
-    @Override
-    public String toString() {
-        return "Customer{" +
-                "custId=" + custId +
-                ", custName='" + custName + '\'' +
-                ", custAddress='" + custAddress + '\'' +
-                "}\n";
-    }
-}
-
-```
-
-
+实体类
 code first ：不需要创建表，只需要关心pojo类，当时需要创建数据库
 
-## 3、hibernate配置文件，resources/hibernate.cfg.xml
-在resources目录下创建hibernate.cfg.xml配置文件，文件内容如下
+配置文件
 
-- 主要配置
-    - 配置数据库连接信息
-    - 数据库方言配置，选择 MySQL
-    - hbm2ddl.auto 生成表的策略选择update
-    - 指定需要进行ORM的包
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE hibernate-configuration PUBLIC
-        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
-        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
-<hibernate-configuration>
-    <session-factory>
-        <!-- 配置数据库连接信息 -->
-        <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
-        <property name="connection.url">jdbc:mysql://localhost:3306/springdata_jpa?characterEncoding=UTF-8</property>
-        <property name="connection.username">root</property>
-        <property name="connection.password">123456</property>
-
-        <!-- 会在日志中记录sql 默认false-->
-        <property name="show_sql">true</property>
-        <!--是否格式化sql 默认false-->
-        <property name="format_sql">true</property>
-        <!--表生成策略
-            默认none   不自动生成
-            update    如果没有表会创建，有会检查更新
-            create    每次删除表，再创建表，即使没有改变
-            create-drop 每次创建表，sessionFactory关闭，就删除表
-            validate 每次验证数据库表结构，只会与表进行比较，不会创建新表，但是会插入新值
-            -->
-        <property name="hbm2ddl.auto">update</property>
-        <!-- 配置方言：选择数据库类型 -->
-        <property name="dialect">org.hibernate.dialect.MySQL57InnoDBDialect</property>
-
-        <!--指定哪些pojo 需要进行ORM映射-->
-        <mapping package="cn.liuminkai.pojo"></mapping>
-    </session-factory>
-</hibernate-configuration>
-```
-## 4、创建数据库
-创建数据库 "springdata_jpa"
-
-
-##
+创建数据库
 
 测试(API使用)
 1、创建 SessionFactory
