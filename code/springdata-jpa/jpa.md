@@ -159,6 +159,9 @@ code first（代码优先）：不需要创建表，只需要关心pojo类，但
 
 
 ### 5、使用 hibernate api 完成增删改查（测试类中进行）
+
+find、merge 修改 持久态 的实体对象，修改会被同步到数据库中
+
 > **步骤：**
 >
 > 1.创建 SessionFactory
@@ -237,8 +240,90 @@ session.createQuery.getResultList
 ## jpa集成hibernate
 拷贝hibernate模块内容可以不要 resources/hibernate.cfg.xml
 
-### 添加 META—INF.persistence.xml
+### 1、添加 resourcesMETA—INF/persistence.xml
+persistence.xml需要配置的内容和hibernate.cfg.xml差不多，就是需要指定一下 JPA的实现方式
+- 主要配置
+    - 指定JPA的实现方式
+    - 配置数据库连接信息
+    - 数据库方言配置，选择 MySQL
+    - hbm2ddl.auto 生成表的策略选择update
+    - 指定需要进行ORM的包
+    
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+    <!--需要配置persistence-unit节点
+        持久化单元：
+            name：持久化单元名称
+            transaction-type：事务管理的方式
+                    JTA：分布式事务管理
+                    RESOURCE_LOCAL：本地事务管理
+    -->
+    <persistence-unit name="hibernateJPA" transaction-type="RESOURCE_LOCAL">
+        <!--jpa的实现方式 -->
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <!--需要进行ORM的POJO类-->
+        <class>cn.liuminkai.pojo.Customer</class>
 
+        <!--可选配置：配置jpa实现方的配置信息-->
+        <properties>
+            <!-- 数据库信息
+                用户名，javax.persistence.jdbc.user
+                密码，  javax.persistence.jdbc.password
+                驱动，  javax.persistence.jdbc.driver
+                数据库地址   javax.persistence.jdbc.url
+            -->
+            <property name="javax.persistence.jdbc.user" value="root"/>
+            <property name="javax.persistence.jdbc.password" value="123456"/>
+            <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/springdata_jpa?characterEncoding=UTF-8"/>
+
+            <!--配置jpa实现方(hibernate)的配置信息
+                显示sql           ：   false|true
+                自动创建数据库表    ：  hibernate.hbm2ddl.auto
+                        create      : 程序运行时创建数据库表（如果有表，先删除表再创建）
+                        update      ：程序运行时创建表（如果有表，不会创建表）
+                        none        ：不会创建表
+
+            -->
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.hbm2ddl.auto" value="update" />
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect" />
+
+        </properties>
+    </persistence-unit>
+
+
+
+    <persistence-unit name="openJpa" transaction-type="RESOURCE_LOCAL">
+        <!--jpa的实现方式 -->
+        <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+
+        <!-- 指定哪些实体需要持久化 -->
+        <class>cn.liuminkai.pojo.Customer</class>
+        <!--可选配置：配置jpa实现方的配置信息-->
+        <properties>
+            <!-- 数据库信息
+                用户名，javax.persistence.jdbc.user
+                密码，  javax.persistence.jdbc.password
+                驱动，  javax.persistence.jdbc.driver
+                数据库地址   javax.persistence.jdbc.url
+            -->
+            <property name="javax.persistence.jdbc.user" value="root"/>
+            <property name="javax.persistence.jdbc.password" value="123456"/>
+            <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/springdata_jpa?characterEncoding=UTF-8"/>
+
+            <!--配置jpa实现方(openjpa)的配置信息
+            -->
+            <!-- 可以自动生成数据库表 -->
+            <property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(ForeignKeys=true)"/>
+        </properties>
+    </persistence-unit>
+
+</persistence>
+```
+### 2、使用 jpa 完成增删改查（测试类中进行）
 测试（JPA使用）
 Persistence.createEnMF
 
@@ -369,7 +454,7 @@ Querydsl https://blog.csdn.net/wjw465150/article/details/124879048
 JPQL
 HQL
 SQL
-hibernateTest中 find、get、getRef update、load、merge、saveOrUpdate remove、delete区别总结
+hibernateTest中 save、persist find、get、getRef update、load、merge、saveOrUpdate remove、delete区别总结
 
 看别人博客再行补充
 JPA-Hibernate-JDBC 与 MyBatis—JDBC 对比
