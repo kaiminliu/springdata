@@ -3,7 +3,7 @@ package cn.liuminkai.pojo;
 import javax.persistence.*;
 
 @Entity     // 作为hibernate 实体类
-@Table(name = "jpa_customer")       // 映射表
+@Table(name = "hibernate_customer")       // 映射表
 public class Customer {
 
     /**

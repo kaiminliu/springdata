@@ -31,12 +31,11 @@
     </dependencies>
 ```
 
-## 2、创建实体类
-@Table 注解 name 会报红，
+### 2、创建实体类
 ```java
 
 @Entity     // 作为hibernate 实体类
-@Table(name = "tb_customer")       // 映射的表明
+@Table(name = "hibernate_customer")       // 映射表
 public class Customer {
 
     /**
@@ -101,9 +100,14 @@ public class Customer {
 ```
 
 
-code first ：不需要创建表，只需要关心pojo类，当时需要创建数据库
 
-## 3、hibernate配置文件，resources/hibernate.cfg.xml
+> @Table 注解 name 会报红，等后面的 3、4、5、都执行完后，选中波浪线，选择数据源
+>
+> ![](jpa/image-20220805092951391.png)
+>
+> ![](jpa/image-20220805092958734.png)
+
+### 3、hibernate配置文件，resources/hibernate.cfg.xml
 在resources目录下创建hibernate.cfg.xml配置文件，文件内容如下
 
 - 主要配置
@@ -139,26 +143,87 @@ code first ：不需要创建表，只需要关心pojo类，当时需要创建�
         <!-- 配置方言：选择数据库类型 -->
         <property name="dialect">org.hibernate.dialect.MySQL57InnoDBDialect</property>
 
-        <!--指定哪些pojo 需要进行ORM映射-->
-        <mapping package="cn.liuminkai.pojo"></mapping>
+        <!--指定哪些pojo类 需要进行ORM映射-->
+        <mapping class="cn.liuminkai.pojo.Customer"></mapping>
     </session-factory>
 </hibernate-configuration>
 ```
-## 4、创建数据库
+### 4、创建数据库
+> 整个示例下啦，我们不行要创建表，等到调用save保存数据时会自动创建表和插入数据，但是需要预先创建数据库
+>
+> ![](jpa/image-20220805093840957.png)
+
 创建数据库 "springdata_jpa"
 
+code first（代码优先）：不需要创建表，只需要关心pojo类，但是需要创建数据库
 
-##
 
-测试(API使用)
-1、创建 SessionFactory
-StandardServiceRegistryBuilder
-MetadataSources
+### 5、使用 hibernate api 完成增删改查（测试类中进行）
+> **步骤：**
+>
+> 1.创建 SessionFactory
+>
+> 2.
+#### 5.1、新增
+```java
+/**
+ * StandardServiceRegistry 作用
+ * MetadataSources 作用
+ * SessionFactory 作用
+ * Session 作用
+ */
+public class HibernateTest {
 
-test1
-sf.openSession
-s.beginT
-tx.commit
+    private SessionFactory sf;
+
+    @Before
+    public void init() {
+        // 1、创建SessionFactory
+        StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure("/hibernate.cfg.xml").build();
+        sf = new MetadataSources(registry).buildMetadata().buildSessionFactory();
+    }
+
+
+    /*
+        注意事项：
+            （1）修改完数据需要，调用session.close()关闭会话，数据才会被持久化到数据库中
+     */
+
+    // 2、使用 hibernate-api 进行 crud
+    /**
+     * 2.1、新增数据
+     */
+    @Test
+    public void testSave() {
+        Transaction transaction = null;
+        // 创建hibernate session对象
+        try(Session session = sf.openSession();) {
+            // 开启事务
+            transaction = session.beginTransaction();
+
+            // 保存数据
+            Customer customer = new Customer();
+            customer.setCustName("张三");
+            customer.setCustAddress("Beijing");
+            session.save(customer);
+
+            // 提交事务
+            transaction.commit();
+        } catch (Exception e) {
+            // 事务回滚
+            transaction.rollback();
+        }
+    }
+}
+```
+
+#### 5.2、查询
+
+
+#### 5.3、修改
+
+
+#### 5.4、删除
 
 save
 saveOrUpdate 有id更新，无id吃ARU
@@ -169,8 +234,10 @@ remove
 测试(hql使用) hql 与 jpql 区别
 session.createQuery.getResultList
 
-jpa集成hibernate
-添加 META—INF.persistence.xml
+## jpa集成hibernate
+拷贝hibernate模块内容可以不要 resources/hibernate.cfg.xml
+
+### 添加 META—INF.persistence.xml
 
 测试（JPA使用）
 Persistence.createEnMF
@@ -237,7 +304,7 @@ PagingAndSortRepository
 - 增删改，需要加声明式事务@Transaction（通常放在业务逻辑层） + @Modifying, 否则报错
 - JPQL不支持新增，但他的实现Hibernate支持，伪新增(insert into ... select)，可以插入从别的地方查出的
     - 我认为直接使用 SQL不久得了
-测试
+    测试
 -   提示插件 jpabuddy 好像已经过期了
 
 4.2、SQL（@Query(nativeQuery=true)）
@@ -254,12 +321,13 @@ Like 需要自己拼上百分号
 4.4、动态条件查询（多条件查询，有值就加入到查询条件，没有就不参与查询）
 4.4.1、QueryByExample
 - 字符串
-withIgnorePaths 忽略某个条件
-withIgnoreCase 会使用lower函数
-withStringMatcher 对所有字符串property进行匹配
-withMatcher（静态方法【支持链式写法】或lambda表达式） 对指定字符串property进行匹配
-使用 withMatcher时 withIgnoreCase 会失效 ？？？ p17 26:00
+  withIgnorePaths 忽略某个条件
+  withIgnoreCase 会使用lower函数
+  withStringMatcher 对所有字符串property进行匹配
+  withMatcher（静态方法【支持链式写法】或lambda表达式） 对指定字符串property进行匹配
+  使用 withMatcher时 withIgnoreCase 会失效 ？？？ p17 26:00
   
+
 4.4.2、Specifications（很复杂）
 new Specifications(root, query, builder);
 
@@ -291,7 +359,7 @@ fetchJoin
 
 
 注解全
-注解在上面各个阶段都生效吗
+注解在上面各个阶段都生效吗 生效的，如@Table里面的name就会新创建数据表的表名
 First1 JPA 在mysql下生效吗
 单标查询ok
 多表查询ok
@@ -301,6 +369,7 @@ Querydsl https://blog.csdn.net/wjw465150/article/details/124879048
 JPQL
 HQL
 SQL
+hibernateTest中 find、get、getRef update、load、merge、saveOrUpdate remove、delete区别总结
 
 看别人博客再行补充
 JPA-Hibernate-JDBC 与 MyBatis—JDBC 对比
