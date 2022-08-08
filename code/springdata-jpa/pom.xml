@@ -2,6 +2,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+    <modules>
+        <module>jpa-01-config-xml</module>
+        <module>jpa-02-config-java</module>
+        <module>jpa-03-repository-api</module>
+        <module>jpa-04-query-jpql_sql_findby</module>
+        <module>jpa-05-query-by-example</module>
+        <module>jpa-06-query-specifications</module>
+        <module>jpa-07-query-dsl</module>
+    </modules>
     <parent>
         <artifactId>code</artifactId>
         <groupId>cn.liuminkai</groupId>

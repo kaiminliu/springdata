@@ -2,10 +2,8 @@ import cn.liuminkai.pojo.Customer;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
+import javax.persistence.*;
+import java.util.List;
 
 /**
  * EntityManager 作用，与前面HibernateTest Session的联系
@@ -19,7 +17,8 @@ public class JpaHibernateTest {
     @Before
     public void init() {
         // 1、创建 EntityManagerFactory
-        factory = Persistence.createEntityManagerFactory("hibernateJPA");
+        //factory = Persistence.createEntityManagerFactory("hibernateJPA");
+        factory = Persistence.createEntityManagerFactory("openJpa");
     }
 
     // 2、使用 jpa 完成增删改查
@@ -72,8 +71,10 @@ public class JpaHibernateTest {
      * merge：
      *  1.没有id，会当新数据插入（请注释掉setCustId，再测试）
      *  2.有id，会先查（请解开注释setCustId，再测试）
-     *      有变动，就更新
+     *      有变动，就更新（记录不存在，就插入新纪录，id自增）
      *      没变动，不更新
+     *
+     * openJPA 实现，没有id就是插入，有id时，必须保证记录是存在的，存在才能更新，否则抛出异常
      */
     @Test
     public void testMerge() {
@@ -90,25 +91,6 @@ public class JpaHibernateTest {
         customer.setCustName("zhangsan");
         customer.setCustAddress("taibei");
         em.merge(customer);
-
-        // 提交事务
-        transaction.commit();
-    }
-
-    @Test
-    public void testSaveOrUpdate() {
-
-        EntityManager em = factory.createEntityManager();
-        EntityTransaction transaction = em.getTransaction();
-
-        // 开启事务
-        transaction.begin();
-
-        // 更新数据
-        Customer customer = new Customer();
-        customer.setCustId(1L);
-        customer.setCustName("zhangsan");
-        customer.setCustAddress("taibei");
 
         // 提交事务
         transaction.commit();
@@ -131,8 +113,51 @@ public class JpaHibernateTest {
         transaction.begin();
 
         // 删除数据（先查后删）
-        Customer customer = em.find(Customer.class, 1L);
+        Customer customer = em.find(Customer.class, 3L);
         em.remove(customer);
+
+        // 提交事务
+        transaction.commit();
+    }
+
+    // 3、使用 jpql
+    @Test
+    public void testUpdateJPQL() {
+        EntityManager em = factory.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        // 开启事务
+        transaction.begin();
+
+        // 使用 jpql
+        Query query = em.createQuery("UPDATE Customer c set c.custName = :name, c.custAddress = :address where c.custId = :id");
+        query.setParameter("id", 2L);
+        query.setParameter("name", "Zhangsan");
+        query.setParameter("address", "Taibei");
+        query.executeUpdate();
+
+        // 提交事务
+        transaction.commit();
+    }
+
+    // 4、使用 sql
+    @Test
+    public void testSelectSQL() {
+        EntityManager em = factory.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        // 开启事务
+        transaction.begin();
+
+        // 使用 sql
+        /*List list = em.createNativeQuery("select * from jpa_customer where id = :id", Customer.class)
+                .setParameter("id", 2L)
+                .getResultList();*/
+        // openJPA 不支持 :，需要使用 ?
+        List list = em.createNativeQuery("select * from jpa_customer where id = ?1", Customer.class)
+                .setParameter(1, 2L)
+                .getResultList();
+        System.out.println("sql select: list = " + list);
 
         // 提交事务
         transaction.commit();

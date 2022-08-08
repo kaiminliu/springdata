@@ -330,7 +330,7 @@ Persistence.createEnMF
 persist
 find（立即查询）
 getRef（延迟查询）
-merge （saveOrUpdate，只更新可以用jpql）
+merge （没有saveOrUpdate接口，只更新可以用jpql）
 remove （直接删除，报删除游离状态异常，只能删除持久化状态（从数据库中查出的状态就是持久化状态））
 
 JPQL
@@ -338,12 +338,33 @@ em.createQuery
     使用sql语句
         createNativeQuery
 
-实现切换为openJpa
-1.引入依赖
-2.
+### 3、 实现切换为openJpa
+#### 3.1、引入依赖
+```xml
+        <!-- openjpa JPA的实现之一 -->
+        <dependency>
+            <groupId>org.apache.openjpa</groupId>
+            <artifactId>openjpa-all</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+```
 
+#### 3.2、切换实现
 
-jpa 4种状态
+切换 持久化单元
+
+![](jpa/image-20220808090034129.png)
+
+openJDK测试 testSelectSQL 会抛出异常
+
+![](jpa/image-20220808090824788.png)
+
+openJDK测试 testMerge 
+    openJPA 实现，没有id就是插入，有id时，必须保证记录是存在的，存在才能更新，否则抛出异常
+
+![](jpa/image-20220808094616036.png)
+
+## jpa 4种状态
 - 临时
 - 持久，对持久状态的更改会对数据库进行同步
   - 只要修改，提交就会，被持久化，即使是find
@@ -353,35 +374,51 @@ jpa 4种状态
 - 删除
 - 游离
 
-一级缓存 基于EntityManager 
-二级缓存
+## jpa 缓存
+### 1、一级缓存 基于EntityManager 
+### 2、二级缓存
 
 
 
-spring-data-jpa 简化jpa的框架
-1、引入依赖
-
-2、配置
-2.1、xml
+## spring-data-jpa 简化jpa的框架
+### 1、引入依赖
+#### 1.1、为了方便管理spring-data的依赖，在父模块code中引入如下依赖：
+```xml
+    <!--统一管理SpringData子项目的版本-->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-bom</artifactId>
+                <version>2021.1.0</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+```
+### 2、配置
+#### 2.1、xml方式
 EntityManagerFactory
 TransationManager
 
-2.2、测试类测试
+##### 测试类测试
 
 repo.delete(customer); 底层会帮我们先查询一下（游离=>持久），再删除
 
-2.2、javaConfig
+#### 2.2、javaConfig
 
+##### 测试类测试
 
-3、repository api的使用
+### 3、repository api的使用
 CrudRepository
 PagingAndSortRepository
     PageRequest.
     Sort. 
         两种：字符串硬编码、type-safe
 
-4、自定义持久化操作（复杂）
-4.1、JPQL （@Query）
+### 4、自定义持久化操作（复杂）
+#### 4.1、JPQL （@Query）
 - 可以自由设置返回值，返回单挑记录使用pojo类，多条记录使用list
 - 查询可以使用 
     - ?数字
@@ -392,10 +429,10 @@ PagingAndSortRepository
     测试
 -   提示插件 jpabuddy 好像已经过期了
 
-4.2、SQL（@Query(nativeQuery=true)）
+#### 4.2、SQL（@Query(nativeQuery=true)）
 
 
-4.3、规定方法名
+#### 4.3、规定方法名
 findByXxx
 
 
@@ -403,8 +440,8 @@ findByXxx
 Like 需要自己拼上百分号
 
 
-4.4、动态条件查询（多条件查询，有值就加入到查询条件，没有就不参与查询）
-4.4.1、QueryByExample
+#### 4.4、动态条件查询（多条件查询，有值就加入到查询条件，没有就不参与查询）
+##### 4.4.1、QueryByExample
 - 字符串
   withIgnorePaths 忽略某个条件
   withIgnoreCase 会使用lower函数
@@ -413,7 +450,7 @@ Like 需要自己拼上百分号
   使用 withMatcher时 withIgnoreCase 会失效 ？？？ p17 26:00
   
 
-4.4.2、Specifications（很复杂）
+##### 4.4.2、Specifications（很复杂）
 new Specifications(root, query, builder);
 
 不支持分组，就是设置了，底层是固定的，这个分组也是无效的
@@ -425,7 +462,7 @@ https://www.1024sky.cn/blog/article/539
 还可以使用 em.getCriteBuilder，builder.createQuery query.form
 
 
-4.4.3、Querydsl
+##### 4.4.3、Querydsl
 可读性更好
 1、集成接口
 2、映入依赖
@@ -455,9 +492,11 @@ JPQL
 HQL
 SQL
 hibernateTest中 save、persist find、get、getRef update、load、merge、saveOrUpdate remove、delete区别总结
+JPA 是否需要每次对 find操作加 事务
 
 看别人博客再行补充
 JPA-Hibernate-JDBC 与 MyBatis—JDBC 对比
+
 
 
 B站 JPA评论

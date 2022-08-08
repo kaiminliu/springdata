@@ -94,7 +94,7 @@ public class HibernateTest {
      * merge：
      *  1.没有id，会当新数据插入（请注释掉setCustId，再测试）
      *  2.有id，会先查（请解开注释setCustId，再测试）
-     *      有变动，就更新
+     *      有变动，就更新（记录不存在，就插入新纪录，id自增）
      *      没变动，不更新
      */
     @Test
