@@ -1022,6 +1022,8 @@ JPA 是否需要每次对 find操作加 事务
 看别人博客再行补充
 JPA-Hibernate-JDBC 与 MyBatis—JDBC 对比
 
+需要结合官方文档补充，spring-data-commons spring-data-jpa
+
 
 
 B站 JPA评论

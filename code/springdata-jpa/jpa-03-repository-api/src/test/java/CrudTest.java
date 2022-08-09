@@ -25,8 +25,8 @@ public class CrudTest {
     public void testInsertOrUpdate() {
         Customer customer = new Customer();
         customer.setCustId(5L);
-        customer.setCustName("lisi");
-        customer.setCustAddress("Shenzhen");
+        customer.setCustName("ZhangLiu");
+        customer.setCustAddress("XiAn");
         System.out.println("customerRepository.save(customer) = " + customerRepository.save(customer));
         // saveAll、saveAndFlush、saveAllAndFlush
     }
