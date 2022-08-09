@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>jpa-05-query-by-example</artifactId>
+    <artifactId>jpa-04-query-jpql_sql_methodname</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -64,6 +64,5 @@
             <artifactId>querydsl-jpa</artifactId>
             <version>4.4.0</version>
         </dependency>
-
     </dependencies>
 </project>

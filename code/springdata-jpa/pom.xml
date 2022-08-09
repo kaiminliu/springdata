@@ -7,7 +7,7 @@
         <module>jpa-01-config-xml</module>
         <module>jpa-02-config-java</module>
         <module>jpa-03-repository-api</module>
-        <module>jpa-04-query-jpql_sql_findby</module>
+        <module>jpa-04-query-jpql_sql_methodname</module>
         <module>jpa-05-query-by-example</module>
         <module>jpa-06-query-specifications</module>
         <module>jpa-07-query-dsl</module>
