@@ -590,7 +590,6 @@ public class JpaXmlTest {
 
     /**
      * 保存
-     * custId 是无效的
      */
     @Test
     public void testSave() {
@@ -716,7 +715,6 @@ public class JpaJavaConfigTest {
 
     /**
      * 保存
-     * custId 是无效的
      */
     @Test
     public void testSave() {
@@ -737,6 +735,212 @@ PagingAndSortRepository
     PageRequest.
     Sort. 
         两种：字符串硬编码、type-safe
+#### Repository
+```java
+@Indexed
+public interface Repository<T, ID> {}
+```
+#### CrudRepository
+```java
+@NoRepositoryBean
+public interface CrudRepository<T, ID> extends Repository<T, ID> {
+    
+	<S extends T> S save(S entity);
+	<S extends T> Iterable<S> saveAll(Iterable<S> entities);
+	Optional<T> findById(ID id);
+	boolean existsById(ID id);
+	Iterable<T> findAll();
+	Iterable<T> findAllById(Iterable<ID> ids);
+	long count();
+	void deleteById(ID id);
+	void delete(T entity);
+	void deleteAllById(Iterable<? extends ID> ids);
+	void deleteAll(Iterable<? extends T> entities);
+	void deleteAll();
+}
+
+```
+#### PagingAndSortingRepository
+```java
+@NoRepositoryBean
+public interface PagingAndSortingRepository<T, ID> extends CrudRepository<T, ID> {
+
+	Iterable<T> findAll(Sort sort);
+	Page<T> findAll(Pageable pageable);
+}
+```
+
+#### JpaRepository （常用）
+```java
+@NoRepositoryBean
+public interface JpaRepository<T, ID> extends PagingAndSortingRepository<T, ID>, QueryByExampleExecutor<T> {
+
+	@Override
+	List<T> findAll();
+	@Override
+	List<T> findAll(Sort sort);
+	@Override
+	List<T> findAllById(Iterable<ID> ids);
+	@Override
+	<S extends T> List<S> saveAll(Iterable<S> entities);
+	void flush();
+	<S extends T> S saveAndFlush(S entity);
+	<S extends T> List<S> saveAllAndFlush(Iterable<S> entities);
+	@Deprecated
+	default void deleteInBatch(Iterable<T> entities){deleteAllInBatch(entities);}
+	void deleteAllInBatch(Iterable<T> entities);
+	void deleteAllByIdInBatch(Iterable<ID> ids);
+	void deleteAllInBatch();
+	@Deprecated
+	T getOne(ID id);
+	T getById(ID id);
+	@Override
+	<S extends T> List<S> findAll(Example<S> example);
+	@Override
+	<S extends T> List<S> findAll(Example<S> example, Sort sort);
+}
+
+```
+#### QueryByExampleExecutor
+```java
+public interface QueryByExampleExecutor<T> {
+
+	<S extends T> Optional<S> findOne(Example<S> example);
+	<S extends T> Iterable<S> findAll(Example<S> example);
+	<S extends T> Iterable<S> findAll(Example<S> example, Sort sort);
+	<S extends T> Page<S> findAll(Example<S> example, Pageable pageable);
+	<S extends T> long count(Example<S> example);
+	<S extends T> boolean exists(Example<S> example);
+	<S extends T, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction);
+}
+```
+#### JpaSpecificationExecutor
+```java
+public interface JpaSpecificationExecutor<T> {
+
+	Optional<T> findOne(@Nullable Specification<T> spec);
+	List<T> findAll(@Nullable Specification<T> spec);
+	Page<T> findAll(@Nullable Specification<T> spec, Pageable pageable);
+	List<T> findAll(@Nullable Specification<T> spec, Sort sort);
+	long count(@Nullable Specification<T> spec);
+}
+```
+#### QuerydslPredicateExecutor
+```java
+public interface QuerydslPredicateExecutor<T> {
+
+	Optional<T> findOne(Predicate predicate);
+	Iterable<T> findAll(Predicate predicate);
+	Iterable<T> findAll(Predicate predicate, Sort sort);
+	Iterable<T> findAll(Predicate predicate, OrderSpecifier<?>... orders);
+	Iterable<T> findAll(OrderSpecifier<?>... orders);
+	Page<T> findAll(Predicate predicate, Pageable pageable);
+	long count(Predicate predicate);
+	boolean exists(Predicate predicate);
+	<S extends T, R> R findBy(Predicate predicate, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction);
+}
+```
+
+
+#### CrudRepository使用
+```java
+@ContextConfiguration(classes = JpaConfig.class)
+@RunWith(SpringJUnit4ClassRunner.class)
+public class CrudTest {
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    /**
+        1. 新增或更新
+            无id，新增
+            有id，先查
+                没记录，新增
+                有记录，有改动时才更新，没改动就不更新
+     */
+    @Test
+    public void testInsertOrUpdate() {
+        Customer customer = new Customer();
+        customer.setCustId(5L);
+        customer.setCustName("lisi");
+        customer.setCustAddress("Shenzhen");
+        System.out.println("customerRepository.save(customer) = " + customerRepository.save(customer));
+        // saveAll、saveAndFlush、saveAllAndFlush
+    }
+
+    /**
+        2. 查询
+     */
+    @Test
+    public void testSelect() {
+
+        System.out.println("customerRepository.findAll() = " + customerRepository.findAll());
+        System.out.println("customerRepository.count() = " + customerRepository.count());
+        System.out.println("customerRepository.existsById(1L) = " + customerRepository.existsById(1L));
+        // findBy、findById、findAllById、findOne、getById、getOne、exists
+    }
+
+    /**
+        3. 删除
+        repo.delete(customer); 底层会帮我们先查询一下（游离=>持久），再删除，查不到就不删除
+     */
+    @Test
+    public void testDelete() {
+
+        Customer customer = new Customer();
+        //customer.setCustId(1L);
+        customer.setCustAddress("ShenZhen");
+        customerRepository.delete(customer);
+        // deleteById、deleteAll、deleteAllById、deleteInBatch、deleteAllInBatch、deleteAllByIdInBatch
+    }
+}
+```
+
+
+#### PagingAndSortingRepository使用
+```java
+@ContextConfiguration(classes = JpaConfig.class)
+@RunWith(SpringJUnit4ClassRunner.class)
+public class PagingAndSortingTest {
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    /**
+     1.排序
+     */
+    @Test
+    public void testSort() {
+        Sort descByCustAddress = Sort.by(Sort.Order.desc("custAddress"));
+        descByCustAddress = Sort.by("custAddress").descending();
+        descByCustAddress = Sort.by(Sort.Direction.DESC, "custAddress");
+        descByCustAddress = Sort.by(Arrays.asList(Sort.Order.desc("custAddress")));
+        // TypeSort
+        descByCustAddress = Sort.sort(Customer.class)
+                .by(Customer::getCustAddress)
+                .descending();
+        System.out.println(customerRepository.findAll(descByCustAddress));
+    }
+
+
+    /**
+     2.分页（可以使用排序）
+     先limit，再count(id)
+     */
+    @Test
+    public void testPage() {
+        int index = 1;
+        int size = 2;
+        PageRequest pageRequest = PageRequest.of(index, size, Sort.Direction.DESC, "custAddress");
+        Page<Customer> page = customerRepository.findAll(pageRequest);
+        System.out.println("page.getTotalElements() = " + page.getTotalElements());
+        System.out.println("page.getTotalPages() = " + page.getTotalPages());
+        System.out.println("page.getContent() = " + page.getContent());
+        System.out.println("page.isEmpty() = " + page.isEmpty());
+    }
+
+}
+```
 
 ### 4、自定义持久化操作（复杂）
 #### 4.1、JPQL （@Query）
@@ -748,7 +952,7 @@ PagingAndSortRepository
 - JPQL不支持新增，但他的实现Hibernate支持，伪新增(insert into ... select)，可以插入从别的地方查出的
     - 我认为直接使用 SQL不久得了
     测试
--   提示插件 jpabuddy 好像已经过期了
+-   提示插件 jpabuddy 好像已经过期了？ 不是过期了，而是收费了
 
 #### 4.2、SQL（@Query(nativeQuery=true)）
 

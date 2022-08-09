@@ -18,7 +18,6 @@ public class JpaJavaConfigTest {
 
     /**
      * 保存
-     * custId 是无效的
      */
     @Test
     public void testSave() {
