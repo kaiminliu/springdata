@@ -397,20 +397,341 @@ openJDK测试 testMerge
         </dependencies>
     </dependencyManagement>
 ```
+
+#### 1.2、子模块都引入
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.data</groupId>
+        <artifactId>spring-data-jpa</artifactId>
+    </dependency>
+
+    <!-- junit4 -->
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13</version>
+        <scope>test</scope>
+    </dependency>
+    <!-- hibernate对jpa的支持包 -->
+    <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-entitymanager</artifactId>
+        <version>5.4.32.Final</version>
+    </dependency>
+
+    <!-- Mysql and MariaDB -->
+    <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>5.1.22</version>
+    </dependency>
+
+    <!--连接池-->
+    <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>druid</artifactId>
+        <version>1.2.8</version>
+    </dependency>
+
+    <!--spring-test -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-test</artifactId>
+        <version>5.3.10</version>
+        <scope>test</scope>
+    </dependency>
+
+    <!-- querydsl -->
+    <dependency>
+        <groupId>com.querydsl</groupId>
+        <artifactId>querydsl-jpa</artifactId>
+        <version>4.4.0</version>
+    </dependency>
+
+</dependencies>
+```
+
 ### 2、配置
 #### 2.1、xml方式
-EntityManagerFactory
-TransationManager
+##### spring.xml
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    https://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/data/jpa
+    https://www.springframework.org/schema/data/jpa/spring-jpa.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!--用于整合jpa  @EnableJpaRepositories -->
+    <jpa:repositories base-package="cn.liuminkai.repository"
+                      transaction-manager-ref="transactionManager"
+                      entity-manager-factory-ref="entityManagerFactory"/>
+
+    <!--EntityManagerFactory-->
+    <bean name="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="jpaVendorAdapter">
+            <!--Hibernate实现-->
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <!--生成数据库表-->
+                <property name="generateDdl" value="true"></property>
+                <property name="showSql" value="true"></property>
+            </bean>
+        </property>
+        <!--设置实体类的包-->
+        <property name="packagesToScan" value="cn.liuminkai.pojo"></property>
+        <property name="dataSource" ref="dataSource" ></property>
+    </bean>
+
+    <!--数据源-->
+    <bean class="com.alibaba.druid.pool.DruidDataSource" name="dataSource">
+        <property name="username" value="root"/>
+        <property name="password" value="123456"/>
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/springdata_jpa?characterEncoding=UTF-8"/>
+    </bean>
+
+    <!--声明式事务-->
+    <bean class="org.springframework.orm.jpa.JpaTransactionManager" name="transactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory"></property>
+    </bean>
+
+    <!--启动注解方式的声明式事务-->
+    <tx:annotation-driven transaction-manager="transactionManager"></tx:annotation-driven>
+
+</beans>
+```
+
+##### 创建pojo.Customer
+```java
+@Entity     // 作为hibernate 实体类
+@Table(name = "tb_customer")       // 映射表
+public class Customer {
+
+    /**
+     * @Id：声明主键的配置
+     * @GeneratedValue:配置主键的生成策略
+     *      strategy
+     *          GenerationType.IDENTITY ：自增，mysql
+     *                 * 底层数据库必须支持自动增长（底层数据库支持的自动增长方式，对id自增）
+     *          GenerationType.SEQUENCE : 序列，oracle
+     *                  * 底层数据库必须支持序列
+     *          GenerationType.TABLE : jpa提供的一种机制，通过一张数据库表的形式帮助我们完成主键自增
+     *          GenerationType.AUTO ： 由程序自动的帮助我们选择主键生成策略
+     * @Column:配置属性和字段的映射关系
+     *      name：数据库表中字段的名称
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long custId; //客户的主键
+
+    @Column(name = "cust_name")
+    private String custName;//客户名称
+
+    @Column(name="cust_address")
+    private String custAddress;//客户地址
+
+    public Long getCustId() {
+        return custId;
+    }
+
+    public void setCustId(Long custId) {
+        this.custId = custId;
+    }
+
+    public String getCustName() {
+        return custName;
+    }
+
+    public void setCustName(String custName) {
+        this.custName = custName;
+    }
+
+
+    public String getCustAddress() {
+        return custAddress;
+    }
+
+    public void setCustAddress(String custAddress) {
+        this.custAddress = custAddress;
+    }
+
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "custId=" + custId +
+                ", custName='" + custName + '\'' +
+                ", custAddress='" + custAddress + '\'' +
+                "}\n";
+    }
+}
+```
+
+##### 创建repository.CustomerRepository
+- 不需要使用@Repository或@Component注解，SpringDataJpa在编译时，会使用反射创建CustomerRepository的实现类，并装配到Spring容器中
+- JpaRepository 是 Jpa 的Repository接口之一，具有 PagingAndSortingRepository，CrudRepository，QueryByExampleExecutor 的功能
+```java
+public interface CustomerRepository extends JpaRepository<Customer, Long> {
+}
+```
 
 ##### 测试类测试
+简单的使用repository-api
+```java
+@ContextConfiguration("/spring.xml") // 指明spring上下文配置文件
+@RunWith(SpringJUnit4ClassRunner.class)
+public class JpaXmlTest {
 
-repo.delete(customer); 底层会帮我们先查询一下（游离=>持久），再删除
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    /**
+     * 保存
+     * custId 是无效的
+     */
+    @Test
+    public void testSave() {
+        Customer customer = new Customer();
+        customer.setCustId(3L);
+        customer.setCustName("WangWu");
+        customer.setCustAddress("Beijing");
+        Customer c = customerRepository.save(customer);
+        System.out.println(c);
+    }
+}
+
+```
+
+
+###### 启动报错：
+
+java.lang.IllegalStateException: Failed to load ApplicationContext
+
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [spring.xml]: Invocation of init method failed; nested exception is org.hibernate.AnnotationException: No identifier specified for entity: cn.liuminkai.pojo.Customer
+
+原因：处在Customer这个类上，注解Id使用错误，应该是 `javax.persistence.Id`，删掉 `import org.springframework.data.annotation.Id;` 即可
+
+![](jpa/image-20220809082721989.png)
 
 #### 2.2、javaConfig
+##### config.JpaConfig
+```java
+/**
+ <!--用于整合jpa  @EnableJpaRepositories -->
+ <jpa:repositories base-package="cn.liuminkai.repository"
+ transaction-manager-ref="transactionManager"
+ entity-manager-factory-ref="entityManagerFactory"></jpa:repositories>
+ */
+@Configuration
+@EnableJpaRepositories("cn.liuminkai.repository") // @EnableJpaRepositories 相当于 jpa:repositories，里面的属性都一致
+/**
+    <!--启动注解方式的声明式事务-->
+    <tx:annotation-driven transaction-manager="transactionManager"></tx:annotation-driven>
+ */
+@EnableTransactionManagement // 启动注解方式的声明式事务
+public class JpaConfig {
+
+    /**
+     <!--EntityManagerFactory-->
+     <bean name="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="jpaVendorAdapter">
+            <!--Hibernate实现-->
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+            <!--生成数据库表-->
+                <property name="generateDdl" value="true"></property>
+                <property name="showSql" value="true"></property>
+            </bean>
+        </property>
+         <!--设置实体类的包-->
+         <property name="packagesToScan" value="cn.liuminkai.pojo"></property>
+         <property name="dataSource" ref="dataSource" ></property>
+     </bean>
+     */
+    @Bean
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+        // EntityManagerFactory
+        LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
+        // Hibernate实现
+        HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
+        // 生成数据库表
+        adapter.setGenerateDdl(true);
+        // 控制台打印SQL
+        adapter.setShowSql(true);
+        factory.setJpaVendorAdapter(adapter);
+        // 设置实体类的包
+        factory.setPackagesToScan("cn.liuminkai.pojo");
+        // 设置数据源
+        factory.setDataSource(dataSource());
+        return factory;
+    }
+
+    /**
+     <!--数据源-->
+     <bean class="com.alibaba.druid.pool.DruidDataSource" name="dataSource">
+         <property name="username" value="root"/>
+         <property name="password" value="123456"/>
+         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+         <property name="url" value="jdbc:mysql://localhost:3306/springdata_jpa?characterEncoding=UTF-8"/>
+     </bean>
+     */
+    @Bean
+    public DataSource dataSource() {
+        // 数据源
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/springdata_jpa?characterEncoding=UTF-8");
+        dataSource.setUsername("root");
+        dataSource.setPassword("123456");
+        return dataSource;
+    }
+
+    /**
+        <!--声明式事务-->
+        <bean class="org.springframework.orm.jpa.JpaTransactionManager" name="transactionManager">
+            <property name="entityManagerFactory" ref="entityManagerFactory"></property>
+        </bean>
+     */
+    @Bean
+    public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
+        JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(entityManagerFactory);
+        return transactionManager;
+    }
+
+}
+```
+##### 直接拷贝 jpa-01-config-xml 的repository和pojo
 
 ##### 测试类测试
+```java
+@ContextConfiguration(classes = JpaConfig.class) // 指明spring上下文配置文件
+@RunWith(SpringJUnit4ClassRunner.class)
+public class JpaJavaConfigTest {
+
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    /**
+     * 保存
+     * custId 是无效的
+     */
+    @Test
+    public void testSave() {
+        Customer customer = new Customer();
+        customer.setCustName("WangWu");
+        customer.setCustAddress("Beijing");
+        Customer c = customerRepository.save(customer);
+        System.out.println(c);
+    }
+}
+
+```
 
 ### 3、repository api的使用
+repo.delete(customer); 底层会帮我们先查询一下（游离=>持久），再删除
 CrudRepository
 PagingAndSortRepository
     PageRequest.
@@ -515,7 +836,7 @@ B站 JPA评论
     - 可能唯一的好处就是换数据库方便吧
         - :就因为关联一大堆才舒服方便啊 级联跟注解关联简直爽死 一大堆关联查询数据 查一下本表关联表要的数据也出来了直接用json注解控制序列化 如果用sql要写一大堆 但是jpa注解控制 啥也不用写查也方便
         - 感觉多表联查不方便绝对是关联注解设置有问题 我以前也这么感觉 但是用久了就发现规律了 以前我也jpa里用jdbctemplate 后来根本不需要 要写原生sql肯定是设计不合理
-4.mybatis灵活度更好吧
-5.国外那用户量能和国内比吗。。。
-人家也不需要秒杀什么的活动，人家是零元购。所以开发的框架一个比一个简单粗暴，但是效率不一定是最好的，重在好上手。
-6.得考虑学习成本，mybatis几乎零入门门槛，jpa不学一段时间，真的不能碰生产环境代码
+        4.mybatis灵活度更好吧
+        5.国外那用户量能和国内比吗。。。
+        人家也不需要秒杀什么的活动，人家是零元购。所以开发的框架一个比一个简单粗暴，但是效率不一定是最好的，重在好上手。
+        6.得考虑学习成本，mybatis几乎零入门门槛，jpa不学一段时间，真的不能碰生产环境代码
