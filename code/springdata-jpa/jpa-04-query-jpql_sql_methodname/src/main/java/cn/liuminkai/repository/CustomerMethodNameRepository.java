@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface CustomerMethodNameRepository extends CrudRepository<Customer, Long> {
 
-    //List<Customer> findByCustAddressLike(String address);
-    List<CustomerNameOnly> findByCustAddressLike(String address);
+    List<Customer> findByCustAddressLike(String address);
+    //List<CustomerNameOnly> findByCustAddressLike(String address);
 
 }

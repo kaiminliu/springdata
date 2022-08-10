@@ -24,55 +24,56 @@ public class JpqlTest {
         System.out.println(repository.findByCustAddressLike(""));
     }
 
-    @Test
-    public void find1() {
-        List<Customer> list = repository.findByCustAddressLike1("").stream().map(e -> {
-            Customer customer = new Customer();
-            customer.setCustName(e.getCustName());
-            return customer;
-        }).collect(Collectors.toList());
-        System.out.println(list);
-    }
-
-    @Test
-    public void find2() {
-        List<Customer> list = repository.findByCustAddressLike2("").stream().map(e -> {
-            Customer customer = new Customer();
-            customer.setCustName(e.getCustName());
-            return customer;
-        }).collect(Collectors.toList());
-        System.out.println(list);
-    }
-
-    @Test
-    public void find3() {
-        List<Customer> list = repository.findByCustAddressLike3("").stream().map(e -> {
-            Customer customer = new Customer();
-            customer.setCustName(e.getCustName());
-            return customer;
-        }).collect(Collectors.toList());
-        System.out.println(list);
-    }
-
-    @Test
-    public void find4() {
-        List<Customer> list = repository.findByCustAddressLike4("").stream().map(e -> {
-            Customer customer = new Customer();
-            customer.setCustName(e.getCustName());
-            return customer;
-        }).collect(Collectors.toList());
-        System.out.println(list);
-    }
-
-    @Test
-    public void find5() {
-        List<CustomerNameOnly> list = repository.findByCustAddressLike5("");
-        System.out.println(list);
-    }
-
-    @Test
-    public void find6() {
-        List<CustomerNameOnly> list = repository.findByCustAddressLike6("");
-        System.out.println(list);
-    }
+    // todo 讨论限制参数返回
+    //@Test
+    //public void find1() {
+    //    List<Customer> list = repository.findByCustAddressLike1("").stream().map(e -> {
+    //        Customer customer = new Customer();
+    //        customer.setCustName(e.getCustName());
+    //        return customer;
+    //    }).collect(Collectors.toList());
+    //    System.out.println(list);
+    //}
+    //
+    //@Test
+    //public void find2() {
+    //    List<Customer> list = repository.findByCustAddressLike2("").stream().map(e -> {
+    //        Customer customer = new Customer();
+    //        customer.setCustName(e.getCustName());
+    //        return customer;
+    //    }).collect(Collectors.toList());
+    //    System.out.println(list);
+    //}
+    //
+    //@Test
+    //public void find3() {
+    //    List<Customer> list = repository.findByCustAddressLike3("").stream().map(e -> {
+    //        Customer customer = new Customer();
+    //        customer.setCustName(e.getCustName());
+    //        return customer;
+    //    }).collect(Collectors.toList());
+    //    System.out.println(list);
+    //}
+    //
+    //@Test
+    //public void find4() {
+    //    List<Customer> list = repository.findByCustAddressLike4("").stream().map(e -> {
+    //        Customer customer = new Customer();
+    //        customer.setCustName(e.getCustName());
+    //        return customer;
+    //    }).collect(Collectors.toList());
+    //    System.out.println(list);
+    //}
+    //
+    //@Test
+    //public void find5() {
+    //    List<CustomerNameOnly> list = repository.findByCustAddressLike5("");
+    //    System.out.println(list);
+    //}
+    //
+    //@Test
+    //public void find6() {
+    //    List<CustomerNameOnly> list = repository.findByCustAddressLike6("");
+    //    System.out.println(list);
+    //}
 }
