@@ -1,5 +1,4 @@
 import cn.liuminkai.config.JpaConfig;
-import cn.liuminkai.repository.CustomerJpqlRepository;
 import cn.liuminkai.repository.CustomerMethodNameRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,5 +16,10 @@ public class MethodNameTest {
     @Test
     public void find() {
         System.out.println(repository.findByCustAddressLike("Beijing"));
+    }
+
+    @Test
+    public void top() {
+        System.out.println(repository.findTopByCustAddress("Shenzhen"));
     }
 }

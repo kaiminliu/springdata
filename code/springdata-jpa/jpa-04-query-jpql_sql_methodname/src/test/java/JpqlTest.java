@@ -21,8 +21,31 @@ public class JpqlTest {
 
     @Test
     public void find() {
-        System.out.println(repository.findByCustAddressLike(""));
+        System.out.println(repository.findByCustAddressLike("Beijing"));
     }
+
+    @Test
+    public void save() {
+        Customer customer = new Customer();
+        customer.setCustAddress("北京");
+        customer.setCustName("张三");
+        //repository.insertCustomerBySelect(2L);
+    }
+
+    @Test
+    public void update() {
+        Customer customer = new Customer();
+        customer.setCustName("Zhangsanll");
+        customer.setCustId(2L);
+        customer.setCustAddress("AB");
+        System.out.println(repository.updateCustomer(customer));
+    }
+
+    @Test
+    public void delete() {
+        System.out.println(repository.deleteCustomer(2L));
+    }
+
 
     // todo 讨论限制参数返回
     //@Test

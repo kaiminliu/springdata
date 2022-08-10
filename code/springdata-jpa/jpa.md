@@ -945,11 +945,15 @@ public class PagingAndSortingTest {
 ### 4、自定义持久化操作（复杂）
 #### 4.1、JPQL （@Query）
 - 可以自由设置返回值，返回单挑记录使用pojo类，多条记录使用list
+- 限定部分返回字段
 - 查询可以使用 
     - ?数字
-    - :参数名
+    - :参数名 @Param
+    - :#{#对象.属性名}
 - 增删改，需要加声明式事务@Transaction（通常放在业务逻辑层） + @Modifying, 否则报错
-- JPQL不支持新增，但他的实现Hibernate支持，伪新增(insert into ... select)，可以插入从别的地方查出的
+    - 缺少 @Modifying org.springframework.dao.InvalidDataAccessApiUsageException: org.hibernate.hql.internal.QueryExecutionRequestException: Not supported for DML operations [insert into Customer(custName, custAddress) select c.custName, c.custAddress from cn.liuminkai.pojo.Customer c where id = ?1]; nested exception is java.lang.IllegalStateException: org.hibernate.hql.internal.QueryExecutionRequestException: Not supported for DML operations [insert into Customer(custName, custAddress) select c.custName, c.custAddress from cn.liuminkai.pojo.Customer c where id = ?1
+    - 缺少 @Transactional org.springframework.dao.InvalidDataAccessApiUsageException: Executing an update/delete query; nested exception is javax.persistence.TransactionRequiredException: Executing an update/delete query
+- JPQL不支持新增，但他的实现Hibernate支持，伪新增(insert into ... select)，可以插入从别的地方查出的 ERROR: line 1:45: unexpected token: values
     - 我认为直接使用 SQL不久得了
     测试
 -   提示插件 jpabuddy 好像已经过期了？ 不是过期了，而是收费了
@@ -958,6 +962,7 @@ public class PagingAndSortingTest {
 
 
 #### 4.3、规定方法名
+- 扩展方法是不支持 保存和更新 的
 findByXxx
 
 

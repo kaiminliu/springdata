@@ -13,4 +13,6 @@ public interface CustomerMethodNameRepository extends CrudRepository<Customer, L
     List<Customer> findByCustAddressLike(String address);
     //List<CustomerNameOnly> findByCustAddressLike(String address);
 
+    Customer findTopByCustAddress(String custAddress);
+
 }
