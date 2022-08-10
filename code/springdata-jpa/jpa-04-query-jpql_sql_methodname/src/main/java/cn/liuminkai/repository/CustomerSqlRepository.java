@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface CustomerSqlRepository extends CrudRepository<Customer, Long> {
 
-    @Query(value = "select * from tb_customer where custAddress = :address", nativeQuery = true)
+    @Query(value = "select * from tb_customer where cust_address = :address", nativeQuery = true)
     List<Customer> findByCustAddressLike(@Param("address") String address);
     //List<CustomerNameOnly> findByCustAddressLike(@Param("address") String address);
 
