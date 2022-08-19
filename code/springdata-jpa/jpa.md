@@ -975,8 +975,20 @@ Like 需要自己拼上百分号
   withIgnoreCase 会使用lower函数
   withStringMatcher 对所有字符串property进行匹配
   withMatcher（静态方法【支持链式写法】或lambda表达式） 对指定字符串property进行匹配
-  使用 withMatcher时 withIgnoreCase 会失效 ？？？ p17 26:00
+  使用 withMatcher时 withIgnoreCase 会失效 ？？？ p17 26:00  
+    - withMatcher 设置后，前面设置的withIgnoreCase就失效了，要想大小写不敏感，必须调用withMatcher的ignoreCase()
+  特别注意：withIgnoreCase 没有效果，跟MySQL字符集排序规则有关https://www.cnblogs.com/stcweb/articles/16473159.html 确实是这样的
   
+注意：因为我新增了一个dataType来测试，Example支持的数据类型（不断修改dataType的类型，查看运行语句是否报错），
+    期间发现，新添加的字段会更新到数据表中，当时如果修改了类型，它不会帮我们修改，当我们修改字段名时，他会认为新加了一个字段，
+    当然删除一个字段时，它也不会删除它
+
+dataType: 整形，浮点型，String，Date，
+- 不支持对象等复杂类型
+- 支持的类型：https://defonds.blog.csdn.net/article/details/46681701
+  https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-type-conversions.html
+
+
 
 ##### 4.4.2、Specifications（很复杂）
 new Specifications(root, query, builder);
