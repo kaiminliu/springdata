@@ -992,6 +992,9 @@ dataType: 整形，浮点型，String，Date，
 
 ##### 4.4.2、Specifications（很复杂）
 new Specifications(root, query, builder);
+// root from Customer  , 获取列
+// CriteriaBuilder where 设置各种条件  (> < in ..)
+// query  组合（order by , where)
 
 不支持分组，就是设置了，底层是固定的，这个分组也是无效的
 不支持查询指定字段，底层会设置死 em， 但是存在线程安全问题 不能使用Autowired，要用@PersistenceContext，一个线程绑定一个em对象
