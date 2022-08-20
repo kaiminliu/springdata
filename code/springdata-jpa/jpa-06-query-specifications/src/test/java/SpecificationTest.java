@@ -69,7 +69,7 @@ public class SpecificationTest {
     @Test
     public void dynamicQueryTest() {
 
-        // 需要查询的数据
+        // 需要查询的条件
         Customer params = new Customer();
         params.setCustName("Lisi");
         params.setCustAddress("Beijing,Shanghai");
@@ -111,10 +111,10 @@ public class SpecificationTest {
     }
 
 
-    // fixme CriteriaBuilder root query : equals > in 排序 动态查询
+    // 4. 使用  CriteriaBuilder root query，多条件+排序 custName.equals(x)、custId > xx、custAddress in (xxx, xxxx)
     @Test
     public void dynamicQueryUseOrderTest() {
-        // 需要查询的数据
+        // 需要查询的条件
         Customer params = new Customer();
         params.setCustName("Lisi");
         params.setCustAddress("Beijing,Shanghai");

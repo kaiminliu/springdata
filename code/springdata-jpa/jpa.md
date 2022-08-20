@@ -1009,7 +1009,47 @@ https://www.1024sky.cn/blog/article/539
 可读性更好
 1、集成接口
 2、映入依赖
-插件生成Q类
+```xml
+        <!-- querydsl -->
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-jpa</artifactId>
+            <version>${querydsl.version}</version>
+        </dependency>
+```
+插件生成Q类（编译时自动生成）
+```xml
+<build>
+    <plugins>
+        <!-- querydsl Q类生成插件，编译后即可生成 -->
+        <plugin>
+            <groupId>com.mysema.maven</groupId>
+            <artifactId>apt-maven-plugin</artifactId>
+            <version>${apt.version}</version>
+            <dependencies>
+                <dependency>
+                    <groupId>com.querydsl</groupId>
+                    <artifactId>querydsl-apt</artifactId>
+                    <version>${querydsl.version}</version>
+                </dependency>
+            </dependencies>
+            <executions>
+                <execution>
+                    <phase>generate-sources</phase>
+                    <goals>
+                        <goal>process</goal>
+                    </goals>
+                    <configuration>
+                        <outputDirectory>target/generated-sources/queries</outputDirectory>
+                        <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>
+                        <logOnlyOnError>true</logOnlyOnError>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+```
 BooleanBuilder
 Q类.类.xx
 不可以可以分组、指定字段 需要用 em， 但是存在线程安全问题 不能使用Autowired，要用@PersistenceContext，一个线程绑定一个em对象
@@ -1018,10 +1058,12 @@ Q类.类.xx
 https://www.1024sky.cn/blog/article/539
 
 JPAQueryFactory方式
+jpq 整合 query dsl https://www.jianshu.com/p/d7778f35875c
 
 集成QuerydslPageSortSupport from()方式
 fetchJoin
 
+Q类有个构造器不太明白
 
 注解全
 注解在上面各个阶段都生效吗 生效的，如@Table里面的name就会新创建数据表的表名
