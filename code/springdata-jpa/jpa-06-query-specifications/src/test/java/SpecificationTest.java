@@ -7,8 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.criteria.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @ContextConfiguration(classes = JpaConfig.class)
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -43,7 +48,6 @@ public class SpecificationTest {
         }));
     }
 
-    // fixme CriteriaBuilder root 使用: equals > in
     // 3、使用  CriteriaBuilder root，多条件 custName.equals(x)、custId > xx、custAddress in (xxx, xxxx)
     @Test
     public void UseEqualsAndGreaterThenAndIn() {
@@ -59,5 +63,98 @@ public class SpecificationTest {
             Predicate p = criteriaBuilder.and(equal, greaterThan, in);
             return p;
         });
+    }
+
+    // 4. 使用  CriteriaBuilder root，多条件 custName.equals(x)、custId > xx、custAddress in (xxx, xxxx)
+    @Test
+    public void dynamicQueryTest() {
+
+        // 需要查询的数据
+        Customer params = new Customer();
+        params.setCustName("Lisi");
+        params.setCustAddress("Beijing,Shanghai");
+
+        System.out.println(repository.findAll((root, query, criteriaBuilder) -> {
+            Path<Long> custId = root.get("custId");
+            Path<String> custName = root.get("custName");
+            Path<String> custAddress = root.get("custAddress");
+
+            if(params == null) {
+                return null;
+            }
+
+            List<Predicate> predicateList = new ArrayList<>();
+
+            // if custIdValue != null ==> custId > xx
+            if(params.getCustId() != null && params.getCustId() > 0) {
+                predicateList.add(criteriaBuilder.greaterThan(custId, params.getCustId()));
+            }
+
+            // if custNameValue != null and custNameValue != "" ==> custName.equals(x)
+            if (StringUtils.hasText(params.getCustName())) {
+                predicateList.add(criteriaBuilder.equal(custName, params.getCustName()));
+            }
+
+            List<String> addressList = Arrays.asList(params.getCustAddress().split(","));
+
+            // if custAddress is not empty ==> custAddress in (xxx, xxxx)
+            if (!CollectionUtils.isEmpty(addressList)) {
+                CriteriaBuilder.In<String> in = criteriaBuilder.in(custAddress);
+                for (String address : addressList) {
+                    in.value(address);
+                }
+                predicateList.add(in);
+            }
+
+            return criteriaBuilder.and(predicateList.toArray(new Predicate[predicateList.size()]));
+        }));
+    }
+
+
+    // fixme CriteriaBuilder root query : equals > in 排序 动态查询
+    @Test
+    public void dynamicQueryUseOrderTest() {
+        // 需要查询的数据
+        Customer params = new Customer();
+        params.setCustName("Lisi");
+        params.setCustAddress("Beijing,Shanghai");
+
+        System.out.println(repository.findAll((root, query, criteriaBuilder) -> {
+            Path<Long> custId = root.get("custId");
+            Path<String> custName = root.get("custName");
+            Path<String> custAddress = root.get("custAddress");
+            Path<Boolean> dataType = root.get("dataType");
+
+            if(params == null) {
+                return null;
+            }
+
+            List<Predicate> predicateList = new ArrayList<>();
+
+            // if custIdValue != null ==> custId > xx
+            if(params.getCustId() != null && params.getCustId() > 0) {
+                predicateList.add(criteriaBuilder.greaterThan(custId, params.getCustId()));
+            }
+
+            // if custNameValue != null and custNameValue != "" ==> custName.equals(x)
+            if (StringUtils.hasText(params.getCustName())) {
+                predicateList.add(criteriaBuilder.equal(custName, params.getCustName()));
+            }
+
+            List<String> addressList = Arrays.asList(params.getCustAddress().split(","));
+
+            // if custAddress is not empty ==> custAddress in (xxx, xxxx)
+            if (!CollectionUtils.isEmpty(addressList)) {
+                CriteriaBuilder.In<String> in = criteriaBuilder.in(custAddress);
+                for (String address : addressList) {
+                    in.value(address);
+                }
+                predicateList.add(in);
+            }
+
+            // 按dataType排序
+            Order dataTypeAsc = criteriaBuilder.asc(dataType);
+            return query.where(predicateList.toArray(new Predicate[predicateList.size()])).orderBy(dataTypeAsc).getRestriction();
+        }));
     }
 }

@@ -991,7 +991,7 @@ dataType: 整形，浮点型，String，Date，
 
 
 ##### 4.4.2、Specifications（很复杂）
-new Specifications(root, query, builder);
+new Specifications(root, query, builder);  ????? 详细弄清楚，其中的api使用
 // root from Customer  , 获取列
 // CriteriaBuilder where 设置各种条件  (> < in ..)
 // query  组合（order by , where)

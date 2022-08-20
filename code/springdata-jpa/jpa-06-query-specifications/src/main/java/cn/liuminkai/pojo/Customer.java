@@ -72,6 +72,7 @@ public class Customer {
                 "custId=" + custId +
                 ", custName='" + custName + '\'' +
                 ", custAddress='" + custAddress + '\'' +
+                ", dataType=" + dataType +
                 "}\n";
     }
 }
