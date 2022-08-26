@@ -187,6 +187,107 @@ JPAQueryFactory方式
 fetchJoin
 
 
+5、多表关联操作（hibernate实现）
+说明去：hibernate官网看
+引入 lombok
+mybatis
+    - 写sql
+mybatis-plus
+    - 写sql
+jpa
+    - 注解
+        - 获取多表数据
+        - 插入多表数据
+        - 删掉关联数据
+5.1、OneToOne
+5.1.1、 单向关联
+@OneToOne
+    cascade维护关联操作，配置关联操作后，在主表crud时，子表才会跟着crud
+    fetch 查询类型，立即加载（默认） or 懒加载（用到才查，提升查询效率）
+    orphanRemoval 关联删除（更新的时候），当为ture时，只要将主表外键设置为null，子表就会删除对应的记录
+    targetEntity 关联的目标类型（默认根据关联类型去设置，一般我们不用管）
+    optional 是否可以为null 
+    
+@JoinColumn 维护外键
+    name 外键名字（数据库中的）
+
+疑问：orphanRemoval 和 cascade维护关联delete 是一样的吗
+
+注意：配置了懒加载需要在调用方法上加@Transational，为什么呢？ 看OneToOneTest
+tb_customer(account) 1<-->1 tb_account
+
+5.1.2、双向关联 （可以再看一边）
+无法再进行关联删除，如何删除，将一方外键设置为null，再删除，jpa已经帮我们封装好了
+两次insert+一次update
+@OneToOne
+    cascade维护关联操作，配置关联操作后，在主表crud时，子表才会跟着crud
+    fetch 查询类型，立即加载（默认） or 懒加载（用到才查，提升查询效率）
+    orphanRemoval 关联删除（更新的时候），当为ture时，只要将主表外键设置为null，子表就会删除对应的记录
+    targetEntity 关联的目标类型（默认根据关联类型去设置，一般我们不用管）
+    optional 是否可以为null
+    mappedBy 将外键约束到另一方维护，另一方的关联属性名 （插入和删除都不会有更新的那一步了）
+
+@JoinColumn 维护外键
+    name 外键名字（数据库中的）
+
+
+5.2、OneToMany
+外键维护在多的一方
+tb_customer(list<message>)  1<-->m tb_message
+关联插入：三个插入 + 两个更新
+关联查询（适合）：
+
+5.3、ManyToOne
+外键维护在多的一方
+tb_customer  1<-->m tb_message(customer)
+关联插入（适合）：三个插入
+关联查询：需要自定义查询（5种），规定方法名最合适（但是只能通过关联对象的id进行匹配，其他属性是无效的）
+
+5.4、ManyToMany
+@ManyToMany
+@JoinTable 可以不写，自动生成
+    name 中间表名字
+    joinColumns 设置这边的外键名
+    inverseJoinColumns 设置关联表的外键名
+
+5.4.1、单向
+@Commit ??? 单元测试，ManyToManyTest 
+
+多对多不实话删除
+
+6、乐观锁（hibernate）
+@Version
+防止并发修改
+
+7、审计
+①实现AuditorAware
+②监听
+③开启功能
+
+8、springdata repository原理
+原理+手写源码+画图
+
+原理：
+①spring 提供了 CustomRepository 的一个jpa-repositories统一实现类RepositoryImpl（SimpleJpaRepository）
+②通过动态代理会根据 CustomRepository 的类加载器，接口s，iHandler 生成代理对象CustomRepositoryProxy（JdkDynamicAopProxy）
+    在iHandler中，CustomRepositoryProxy的方法中会调用 RepositoryImpl 对应方法
+        RepositoryImpl 会根据构造器传递进来的 em ， pojoClass， 使用 jpa-api 完成相应的数据库操作
+            em 的获取是通过 iocContext 获取的 EntityManagerFactory（LocalContainerEntityManagerFactoryBean） 创建 EntityManager
+            pojoClass 的获取是通过 CustomRepositoryProxy中利用 反射 获取 CustomRepository 的父接口上的泛型参数得知
+
+9、spring整合jpa原理
+
+11、springboot-jpa
+
+命名策略的配置，主要看是否是先创建数据库，还是先写代码
+    - 如果是先创建数据库，再写代码，是有必要更改命名策略的
+    - 如果是先写代码，再自动生成数据库，就没必要管命名策略
+
+
+源码
+JpaBaseConfiguration
+JpaRepositoriesAutoConfiguration  @Import(JpaRepositoriesAutoConfigureRegistrar.class)
+
 注解全
 注解在上面各个阶段都生效吗
 First1 JPA 在mysql下生效吗

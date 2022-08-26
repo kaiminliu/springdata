@@ -9,6 +9,7 @@ import com.querydsl.core.types.PathMetadata;
 import javax.annotation.Generated;
 import com.querydsl.core.types.Path;
 
+
 /**
  * QCustomer is a Querydsl query type for Customer
  */

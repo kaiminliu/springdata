@@ -11,6 +11,13 @@
         <module>jpa-05-query-by-example</module>
         <module>jpa-06-query-specifications</module>
         <module>jpa-07-query-dsl</module>
+        <module>jpa-08-one2one</module>
+        <module>jpa-09-one2many</module>
+        <module>jpa-10-many2one</module>
+        <module>jpa-11-one2many_many2one</module>
+        <module>jpa-12-many2many</module>
+        <module>jpa-13-optimistic-lock</module>
+        <module>jpa-14-audit</module>
     </modules>
     <parent>
         <artifactId>code</artifactId>
