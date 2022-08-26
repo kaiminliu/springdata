@@ -282,7 +282,12 @@ tb_customer  1<-->m tb_message(customer)
 命名策略的配置，主要看是否是先创建数据库，还是先写代码
     - 如果是先创建数据库，再写代码，是有必要更改命名策略的
     - 如果是先写代码，再自动生成数据库，就没必要管命名策略
+第一阶段是从域模型映射中确定正确的逻辑名称。逻辑名称可以由用户显式指定（例如，使用@Columnor @Table），也可以由 Hibernate 通过 ImplicitNamingStrategy契约隐式确定
+其次是将此逻辑名称解析为由PhysicalNamingStrategy合同定义的物理名称。
 
+@Column等 显示命名
+ImplicitNamingStrategy 隐式命名策略，未显式就会使用隐式，有显式就不会使用隐式，一般就是驼峰转下划线
+PhysicalNamingStrategy 物理命名策略 对显示命名或隐式命名之后的结果进行处理，一般是单词全拼转缩写等等
 
 源码
 JpaBaseConfiguration
@@ -324,3 +329,73 @@ B站 JPA评论
 5.国外那用户量能和国内比吗。。。
 人家也不需要秒杀什么的活动，人家是零元购。所以开发的框架一个比一个简单粗暴，但是效率不一定是最好的，重在好上手。
 6.得考虑学习成本，mybatis几乎零入门门槛，jpa不学一段时间，真的不能碰生产环境代码
+
+hibernate 官方文档疑问：
+想oneToOne这些注解（映射）可以作用在 @Query，Specification、QueryDsl、MethodName、QueryByExample 上吗
+Hibernate 提供了许多内置的基本类型
+@Temporal java.util Or java.time 下面的包需要显示映射，不用会有啥结果
+SQL 引用标识符 Hibernate使用` ,Jpa使用 \"
+@Entity的name有什么用
+@Subselect 是否支持 JPQL或HQL查询
+2.5.9。定义自定义实体代理
+2.5.10。使用 @Tuplizer 注释的动态实体代理
+2.5.11。定义一个自定义实体持久化器
+@Formula 会不会持久化
+2.5.12。访问策略 ？？？ 基于字段的访问 不用写Getter为啥
+字段 和 属性 有啥区别
+@Embedded + @Access = @Embeddable ？
+@EmbeddedId/@IdClass + @ManyToOne 不支持移植？？ 为什么
+非聚合复合标识符？？
+2.6.5。具有关联的复合标识符
+2.6.6。具有生成属性的复合标识符
+2.6.9。使用序列
+2.6.10。使用 IDENTITY 列
+2.6.10。使用 IDENTITY 列
+2.6.12。使用 UUID 生成  这里只是强调一些UUID类型可以直接作为主键
+2.6.13。优化器
+2.6.14。使用@GenericGenerator
+2.6.15。派生标识符
+2.6.16。@RowId
+
+注解：
+@Entity
+@Table
+@Id
+@Embeddable（jpa中没有用处） 修饰类 表示此类可以被插入某个entity中
+@Basic 标注基本类型和其包装类型，可省略
+@Column
+@NaturalId 唯一键
+@Synchronize
+注解-类型映射：
+    @org.hibernate.annotations.Type( type = "nstring" ) 在实体属性JavaType上指定HibernateType
+    √ @Enumerated 映射枚举
+    √ @Convert 指定属性转换器
+    @Lob
+    @Nationalized ？？？
+    UUID映射 ？？？
+    √ @Temporal(TemporalType.DATE)
+    √ @Generated 属性值生成时间
+    √ @GeneratorType 指定自定义属性值生成
+    @CreationTimestamp，@UpdateTimestamp 持久化时，设置为JVM当前时间错
+    @ValueGenerationType 自定义 @Generated or @CreationTimestamp 属性值生成器
+    √ @ColumnTransformer 列转换器
+    √ @Formula 虚拟列
+    √ @Embeddable 可嵌入类型
+    √ @Embedded ？？？
+    @AttributeOverride 基本参数名重写，主要是属性名冲突，例如多个相同可嵌入类型是使用
+    @AssociationOverride 引用参数名重写
+    @Target 相当于 @XToX的 targetEntity属性 指定关联接口的实现类
+    @Parent 类似于 @OneToOne双向 外键维护在@Parent端
+    @Entity JPA实体类 参考 POJO 模型
+    @Table 映射表的catalog、scheme、name ？？？？  
+    equals and hashCode 没细看
+    √ @Subselect 实体映射到 SQL 查询
+    √ @Synchronize 指定 @Subselect查询过程中需要哪些表，因为Hibernate 无法解析原生SQL
+    @Transient 避免持久化
+    @Access 修改访问策略
+    @ElementCollection  可嵌入集合的实体 @CollectionTable
+    @Id 主键
+    @GeneratedValue 主键生成策略
+    @GenerationType
+    @EmbeddedId 复合主键
+    @IdClass    复合主键
