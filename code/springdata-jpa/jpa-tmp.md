@@ -253,7 +253,7 @@ tb_customer  1<-->m tb_message(customer)
 5.4.1、单向
 @Commit ??? 单元测试，ManyToManyTest 
 
-多对多不实话删除
+多对多不适合删除
 
 6、乐观锁（hibernate）
 @Version

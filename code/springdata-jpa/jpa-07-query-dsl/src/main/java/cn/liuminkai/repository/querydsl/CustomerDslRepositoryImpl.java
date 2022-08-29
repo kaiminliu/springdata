@@ -9,7 +9,7 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CustomerDslRepositoryImpl extends QuerydslRepositorySupport implements CustomerDslRepository {
+public class CustomerDslRepositoryImpl extends QuerydslPageSortSupport implements CustomerDslRepository {
 
     public CustomerDslRepositoryImpl(Class<Customer> customerClass) {
         super(customerClass);
