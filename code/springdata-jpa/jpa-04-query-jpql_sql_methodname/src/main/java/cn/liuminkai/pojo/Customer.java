@@ -1,5 +1,7 @@
 package cn.liuminkai.pojo;
 
+import lombok.Getter;
+
 import javax.persistence.*;
 
 @Entity     // 作为hibernate 实体类

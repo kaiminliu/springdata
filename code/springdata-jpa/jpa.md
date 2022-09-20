@@ -1059,6 +1059,7 @@ https://www.1024sky.cn/blog/article/539
 
 JPAQueryFactory方式
 jpq 整合 query dsl https://www.jianshu.com/p/d7778f35875c
+https://zhuanlan.zhihu.com/p/458210738
 
 https://wenku.baidu.com/view/f2a1db9efe0a79563c1ec5da50e2524de518d0d6.html
 
